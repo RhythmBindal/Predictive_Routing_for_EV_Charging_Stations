@@ -20,14 +20,14 @@ charging_station_nodes = [node for node, data in G.nodes(data=True) if data.get(
 def find_nearest_charging_station(G, current_node, charging_station_nodes):
     min_distance = float("inf")
     nearest_charging_station = None
-    # payment_mode = None
-    # for charging_station in charging_station_nodes:
-    #     distance = nx.shortest_path_length(G, current_node, charging_station, weight='length')
-    #     if distance < min_distance:
-    #         min_distance = distance
-    #         nearest_charging_station = charging_station
-    #         payment_mode = payment_modes[charging_station]
-    # return nearest_charging_station, payment_mode
+    payment_mode = None
+    for charging_station in charging_station_nodes:
+        distance = nx.shortest_path_length(G, current_node, charging_station, weight='length')
+        if distance < min_distance:
+            min_distance = distance
+            nearest_charging_station = charging_station
+            payment_mode = payment_modes[charging_station]
+    return nearest_charging_station, payment_mode
     for charging_station in charging_station_nodes:
         distance = nx.shortest_path_length(G, current_node, charging_station, weight='length')
         if distance < min_distance:
@@ -35,11 +35,11 @@ def find_nearest_charging_station(G, current_node, charging_station_nodes):
             nearest_charging_station = charging_station
     return nearest_charging_station
 # Create a dictionary to store the payment modes for each charging station
-# payment_modes = {}
-# for idx, row in df.iterrows():
-#     node_id = charging_station_nodes[idx]
-#     payment_mode = row['payment_modes']  # Replace 'payment_mode' with the appropriate column name in your DataFrame
-#     payment_modes[node_id] = payment_mode
+payment_modes = {}
+for idx, row in df.iterrows():
+    node_id = charging_station_nodes[idx]
+    payment_mode = row['payment_modes']  # Replace 'payment_mode' with the appropriate column name in your DataFrame
+    payment_modes[node_id] = payment_mode
 
 st.title("Delhi EV Charging Stations Route Planner")
 
@@ -62,19 +62,19 @@ if st.button("Find route"):
         route = nx.shortest_path(G, start_node, end_node, weight='length')
         route_length = nx.shortest_path_length(G, start_node, end_node, weight='length') / 1000
 
-        # if route_length <= battery_range:
-        #     st.success("The destination is within your battery range. No need to stop at a charging station.")
-        #     fig, ax = ox.plot_graph_route(G, route, route_linewidth=6, node_size=0, bgcolor='k', edge_color="w", edge_linewidth=0.5, show=False, close=False)
-        #     st.pyplot(fig)
-        # else:
-        # nearest_charging_station = find_nearest_charging_station(G, start_node, charging_station_nodes)
-        # st.warning("The destination is beyond your battery range. You should stop at a charging station.")
-        # st.write("Nearest charging station: REVOS, Saket K Block Gate No. 3".format(G.nodes[nearest_charging_station]['name']))
-        
+        if route_length <= battery_range:
+            st.success("The destination is within your battery range. No need to stop at a charging station.")
+            fig, ax = ox.plot_graph_route(G, route, route_linewidth=6, node_size=0, bgcolor='k', edge_color="w", edge_linewidth=0.5, show=False, close=False)
+            st.pyplot(fig)
+        else:
         nearest_charging_station = find_nearest_charging_station(G, start_node, charging_station_nodes)
         st.warning("The destination is beyond your battery range. You should stop at a charging station.")
-        st.write("Nearest charging station: {}".format(G.nodes[nearest_charging_station]['name']))
-        st.write("Payment mode: UPI")
+        st.write(f"Nearest charging station: {payment_modes}".format(G.nodes[nearest_charging_station]['name']))
+        
+#         nearest_charging_station = find_nearest_charging_station(G, start_node, charging_station_nodes)
+#         st.warning("The destination is beyond your battery range. You should stop at a charging station.")
+#         st.write("Nearest charging station: {}".format(G.nodes[nearest_charging_station]['name']))
+#         st.write("Payment mode: UPI")
 
 
             # Plot the route to the nearest charging station
